@@ -1,6 +1,8 @@
 #ifndef RANDOM_VARIABLE_H
 #define RANDOM_VARIABLE_H
 
-float generateRandomVariable();
+float ExpRandomGenerate();
+
+float UniformRandomGenerate();
 
 #endif

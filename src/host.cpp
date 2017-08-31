@@ -49,7 +49,7 @@ public:
             //(long unsigned)self(),m_number, i);
 			if(hostStatus == infected){
 				printf("%ld - selfheal - infected\n", time(NULL));
-				usleep(1000000*generateRandomVariable());
+				usleep(1000000*ExpRandomGenerate());
 				printf("%ld - selfheal - susceptible\n", time(NULL));
 				hostStatus = susceptible;
 			}
@@ -74,7 +74,7 @@ public:
 				printf("%ld - exogenous - susceptible\n", time(NULL));
 				hostStatus = infected;
 				printf("%ld - exogenous - infected\n", time(NULL));
-				usleep(1000000*generateRandomVariable());
+				usleep(1000000*ExpRandomGenerate());
       	}
 		}
       return NULL;

@@ -3,7 +3,7 @@
 #include <time.h>
 #include "include/randomvariable.h"
 
-float generateRandomVariable()
+float ExpRandomGenerate()
 {
 	float variable, exponential;
 	int precision = 1000;
@@ -15,4 +15,15 @@ float generateRandomVariable()
 	exponential = -log(variable)/coeficient;	
 
 	return exponential;
+}
+
+float UniformRandomGenerate()
+{
+	float variable;
+	int precision = 1000;
+	
+	srand(time(NULL));
+	variable = (float) (rand()%precision+1)/precision;
+	
+	return variable;
 }
