@@ -8,7 +8,7 @@
 #include "include/thread.h"
 #include "include/workqueue.h"
 #include "include/tcpacceptor.h"
-
+#include "include/randomvariable.h"
 
 #define FAIL -1
 
@@ -48,9 +48,9 @@ public:
       	//printf("SelfHeal - thread %lu, number %d, loop %d - waiting for item...\n",
             //(long unsigned)self(),m_number, i);
 			if(hostStatus == infected){
-				printf("infected\n");
-				usleep(5000000);
-				printf("susceptible\n");
+				printf("%ld - selfheal - infected\n", time(NULL));
+				usleep(1000000*generateRandomVariable());
+				printf("%ld - selfheal - susceptible\n", time(NULL));
 				hostStatus = susceptible;
 			}
       }
@@ -68,10 +68,15 @@ public:
    {
       for(int i = 0;; i++)
       {
-      	printf("ExogenousInfect - thread %lu, number %d, loop %d - waiting for item...\n",
-            (long unsigned)self(),m_number, i);
-			usleep(10000000);
-      }
+      	//printf("ExogenousInfect - thread %lu, number %d, loop %d - waiting for item...\n",
+         //   (long unsigned)self(),m_number, i);
+			if(hostStatus == susceptible) {
+				printf("%ld - exogenous - susceptible\n", time(NULL));
+				hostStatus = infected;
+				printf("%ld - exogenous - infected\n", time(NULL));
+				usleep(1000000*generateRandomVariable());
+      	}
+		}
       return NULL;
    }
 };

@@ -1,7 +1,7 @@
 CC = g++
 CFLAGS = -g -c -Wall
 LDFLAGS =
-SOURCES = host.cpp tcpstream.cpp tcpacceptor.cpp thread.cpp
+SOURCES = host.cpp tcpstream.cpp tcpacceptor.cpp thread.cpp randomvariable.cpp
 INCLUDES = -I. 
 LPTHREAD = -lpthread
 OBJS = $(SOURCES:.cpp=.o)
