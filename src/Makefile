@@ -1,19 +1,6 @@
-CC = g++
-CFLAGS = -g -c -Wall
-LDFLAGS =
-SOURCES = host.cpp tcpstream.cpp tcpacceptor.cpp thread.cpp randomvariable.cpp
-INCLUDES = -I. 
-LPTHREAD = -lpthread
-OBJS = $(SOURCES:.cpp=.o)
-TARGET = host
-
-all: $(SOURCES) $(TARGET)
-
-$(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) $(LPTHREAD) -o $@
-
-.cpp.o:
-	$(CC) $(CFLAGS) $(INCLUDES) $< -o $@
-
+all:
+	make -f Makefile.globalserver
+	make -f Makefile.host
 clean:
-	rm -rf $(OBJS) $(TARGET)
+	make -f Makefile.globalserver clean
+	make -f Makefile.host clean

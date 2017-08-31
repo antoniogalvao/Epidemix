@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "include/thread.h"
 #include "include/workqueue.h"
+#include "include/tcpconnector.h"
 #include "include/tcpacceptor.h"
 #include "include/randomvariable.h"
 
@@ -25,15 +26,29 @@ public:
 
 	void* run()
    {
+		//TCPConnector* connector = new TCPConnector;
+
       for(int i = 0;; i++)
       {
-      	printf("InfectNear - thread %lu, number %d, loop %d - waiting for item...\n",
-            (long unsigned)self(),m_number, i);
-			usleep(10000000);
+      	//printf("InfectNear - thread %lu, number %d, loop %d - waiting for item...\n",
+         //   (long unsigned)self(),m_number, i);
+			/*usleep(100000*ExpRandomGenerate());
+			if(hostStatus == infected) {
+				TCPStream* stream = connector->connect("localhost", 2000);
+				if(stream) {
+					printf("InfectNear - connection established\n");
+				}
+				else{
+					printf("InfectNear - error connection\n");
+				}
+				delete stream;
+			}*/
+
       }
       return NULL;
    }
 };
+
 
 class SelfHeal : public Thread
 {
@@ -50,8 +65,8 @@ public:
 			if(hostStatus == infected){
 				printf("%ld - selfheal - infected\n", time(NULL));
 				usleep(1000000*ExpRandomGenerate());
-				printf("%ld - selfheal - susceptible\n", time(NULL));
-				hostStatus = susceptible;
+				//printf("%ld - selfheal - susceptible\n", time(NULL));
+				//hostStatus = susceptible;
 			}
       }
       return NULL;
@@ -70,12 +85,12 @@ public:
       {
       	//printf("ExogenousInfect - thread %lu, number %d, loop %d - waiting for item...\n",
          //   (long unsigned)self(),m_number, i);
-			if(hostStatus == susceptible) {
+			/*if(hostStatus == susceptible) {
 				printf("%ld - exogenous - susceptible\n", time(NULL));
 				hostStatus = infected;
 				printf("%ld - exogenous - infected\n", time(NULL));
 				usleep(1000000*ExpRandomGenerate());
-      	}
+      	}*/
 		}
       return NULL;
    }
@@ -89,24 +104,36 @@ public:
 
    void* run()
    {
+		/*TCPAcceptor* acceptor = new TCPAcceptor("localhost", 3000);
+		acceptor->start();
       for(int i = 0;; i++)
       {
-      	printf("EndogenousInfect - thread %lu, number %d, loop %d - waiting for item...\n",
-            (long unsigned)self(),m_number, i);
-			usleep(10000000);
-      }
+      	//printf("EndogenousInfect - thread %lu, number %d, loop %d - waiting for item...\n",
+         //   (long unsigned)self(),m_number, i);
+			//usleep(10000000);
+			if(hostStatus == susceptible) {
+				TCPStream* stream = acceptor->accept();
+				if(stream) {
+					printf("EndogenousInfect - connection established\n");
+				}
+				else{
+					printf("EndogenousInfect - error connection\n");
+				}
+				delete stream;
+			}
+		}*/
       return NULL;
-   }
+	}
 };
 
 
 int main(int argc, char** argv)
 {
-   if(argc != 3)
+   /*if(argc != 3)
    {
       printf("Usage: %s <ip> <port>\n", argv[0]);
       exit(1);
-   }
+   }*/
 
 	hostStatus = infected;
 
@@ -139,19 +166,24 @@ int main(int argc, char** argv)
 	}
 	endogenousInfect->start();
 
+	TCPConnector* connector = new TCPConnector;
+	connector->connect("localhost", 2000);
 
 
-   TCPAcceptor* acceptor = NULL;
+	while(true){
+	}
+
+  /* TCPAcceptor* acceptor = NULL;
    acceptor = new TCPAcceptor(argv[1], atoi(argv[2]));
    if(!acceptor || acceptor->start() > 0){
       printf("Could not create an connection acceptor\n");
       exit(1);
-   }
+   }*/
 
    //cout << "Server online" << endl;
 
 
-   while(1)
+   /*while(1)
    {
       TCPStream* connection = acceptor->accept();
       std::cout << "Connection: " << connection->getPeerIP() << ":" << connection->getPeerPort() << std::endl;
@@ -160,8 +192,8 @@ int main(int argc, char** argv)
          printf("Could not accept a connection\n");
          continue;
       }
-   }
+   }*/
 
-   perror("Could not start the server\n");
-   exit(-1);
+   //perror("Could not start the server\n");
+   //exit(-1);
 }
