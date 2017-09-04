@@ -7,6 +7,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <stdlib.h>
+#include "include/globalserver.h"
 #include "include/thread.h"
 #include "include/workqueue.h"
 #include "include/tcpacceptor.h"
@@ -15,6 +16,7 @@
 #define FAIL -1
 
 ofstream myfile;
+int connectionNumber = 0;
 
 
 class WorkItem
@@ -49,6 +51,7 @@ public:
 
          //establishes connection with a host
          TCPStream* stream = item->getStream();
+         connectionNumber++;
 			char peerPortString[10];
 			sprintf(peerPortString, "%d", stream->getPeerPort());
          length = stream->receiveMessage(hostRequestMessage, sizeof(hostRequestMessage));
@@ -57,8 +60,8 @@ public:
          cout << "host port - " << hostPortString << endl;
 
          //save host information
-			myfile.open("example.txt", std::ios_base::app);
-			myfile << "1 - " << peerPortString << " " << hostPortString << "\n";
+			myfile.open(FILENAME, std::ios_base::app);
+			myfile << connectionNumber << " " << peerPortString << " " << hostPortString << "\n";
 
 			myfile.close();
 
@@ -78,7 +81,7 @@ public:
             if( (strcmp(hostRequestMessage,"REQUEST HOST")) == 0 ){
                printf("procurar host\n");
                //search randomic for a host that is not the actual peer
-               //searchHost(peerPortString);
+               searchHost(peerPortString);
             }
             else{
                printf("faz nada\n");
