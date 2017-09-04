@@ -37,41 +37,61 @@ public:
    {
       for(int i = 0;; i++)
       {
+
+         ssize_t length;
+         char hostRequestMessage[256];
+
          printf("thread %lu, loop %d - waiting for item...\n",
             (long unsigned)self(), i);
          WorkItem* item = m_queue.remove();
          printf("thread %lu, loop %d - got one item\n",
             (long unsigned)self(), i);
 
-
+         //establishes connection with a host
          TCPStream* stream = item->getStream();
 			char peerPortString[10];
 			sprintf(peerPortString, "%d", stream->getPeerPort());
+         length = stream->receiveMessage(hostRequestMessage, sizeof(hostRequestMessage));
+         char hostPortString[10];
+         strcpy(hostPortString, hostRequestMessage);
+         cout << "host port - " << hostPortString << endl;
+
+         //save host information
 			myfile.open("example.txt", std::ios_base::app);
-			myfile << "1 - " << peerPortString << "\n";
+			myfile << "1 - " << peerPortString << " " << hostPortString << "\n";
+
 			myfile.close();
-			printf("1 - %s", peerPortString);
 
-         //ssize_t length;
-         //char line[256];
 
-         /*while ((length = stream->receiveMessage(line, sizeof(line))) > 0)
+			printf("1 - %s\n", peerPortString);
+
+
+         while ((length = stream->receiveMessage(hostRequestMessage, sizeof(hostRequestMessage))) > 0)
          {
-            line[length] = 0;
+            hostRequestMessage[length] = '\0';
         //    char peerPortString[10];
         //    sprintf(peerPortString, "%d",stream->getPeerPort());
-            printf("%s - %s\n", peerPortString, line);
-            for(unsigned i = 0; i < sizeof(line); i++)
-            {
-               line[i] = toupper(line[i]);
+            printf("%s - %s\n", peerPortString, hostRequestMessage);
+
+            printf("%s\n", hostRequestMessage);
+
+            if( (strcmp(hostRequestMessage,"REQUEST HOST")) == 0 ){
+               printf("procurar host\n");
+               //search randomic for a host that is not the actual peer
+               //searchHost(peerPortString);
             }
+            else{
+               printf("faz nada\n");
+            }
+
             char serverResponseMessage[512];
+
             strcat(serverResponseMessage, peerPortString);
             strcat(serverResponseMessage, " - ");
-            strcat(serverResponseMessage, line);
-            stream->sendMessage(serverResponseMessage, length);
+            strcat(serverResponseMessage, hostRequestMessage);
 
-         }*/
+            stream->sendMessage(serverResponseMessage, length);
+         }
 
          delete stream;
       }
