@@ -3,16 +3,28 @@
 #include <time.h>
 #include "include/randomvariable.h"
 
+
+
+int RandomGenerate(int maxRange) {
+	int variable;
+
+	srand(time(NULL));
+	variable = (int) (rand()%maxRange);
+
+	return variable;
+}
+
+
 float ExpRandomGenerate()
 {
 	float variable, exponential;
 	int precision = 1000;
 	float coeficient = 1.1;
-	
+
 	srand(time(NULL));
 	variable = (float) (rand()%precision+1)/precision;
 
-	exponential = -log(variable)/coeficient;	
+	exponential = -log(variable)/coeficient;
 
 	return exponential;
 }
@@ -21,18 +33,9 @@ float UniformRandomGenerate()
 {
 	float variable;
 	int precision = 1000;
-	
+
 	srand(time(NULL));
 	variable = (float) (rand()%precision+1)/precision;
-	
-	return variable;
-}
-
-int RandomGenerate(int maxRange) {
-	int variable;
-	
-	srand(time(NULL));
-	variable = (int) (rand()%maxRange+1)/maxRange;
 
 	return variable;
 }

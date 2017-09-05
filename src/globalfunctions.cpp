@@ -1,19 +1,27 @@
 #include "include/globalfunctions.h"
 #include "include/randomvariable.h"
 
+
+//iostream is used only for debugging
+#include <iostream>
 #include <stdlib.h>
-#include <stdio.h>
 
 using namespace std;
 
+
+//the good practice is call this function only with the system have more than 1 host
 int searchHost(const vector<hostData> & hostVector, char* peerPortString) {
-   printf("comecando busca\n");
+   cout << "comecando busca" << endl;
    int index = RandomGenerate(hostVector.size());
+   cout << index << endl;
+   //this loop doesnt check if the system have only one node
+   //can runs indefinitely
    /*while(hostVector[index].peerPortString == peerPortString) {
       index = RandomGenerate(hostVector.size());
-   }
-   */
-   int peerPort = atoi(peerPortString); //wrong the correct is hostVector[index].peerPortString.c_str()
-   //need to search for the error in the conversion
-   return peerPort;
+   }*/
+
+   int hostPort = atoi(hostVector[index].hostPortString.c_str());
+
+
+   return hostPort;
 }
