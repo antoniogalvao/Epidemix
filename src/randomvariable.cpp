@@ -12,6 +12,7 @@ int RandomGenerate(int maxRange) {
 	variable = (int) (rand()%maxRange);
 
 	return variable;
+
 }
 
 

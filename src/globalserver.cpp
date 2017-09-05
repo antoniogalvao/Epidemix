@@ -44,6 +44,7 @@ public:
 
          ssize_t length;
          char hostRequestMessage[256];
+         char serverResponseMessage[256];
 
          printf("thread %lu, loop %d - waiting for item...\n",
             (long unsigned)self(), i);
@@ -87,13 +88,14 @@ public:
                printf("procurar host\n");
                //search randomic for a host that is not the actual peer
                int peerPort = searchHost(hostVector, peerPortString);
-               cout << peerPort << endl;
+               cout << "PORTA ALEATORIA ENCONTRADA: " << peerPort << endl;
+               snprintf(serverResponseMessage, length, "%d", peerPort);
+               stream->sendMessage(serverResponseMessage, length);
             }
             else{
                printf("faz nada\n");
             }
 
-            char serverResponseMessage[512];
 
             strcat(serverResponseMessage, peerPortString);
             strcat(serverResponseMessage, " - ");

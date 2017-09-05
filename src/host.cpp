@@ -26,20 +26,35 @@ static enum {susceptible, infected} hostStatus;
 class InfectNear : public Thread
 {
 	int m_number;
+	TCPStream* m_globalServerStream;
+
 public:
-	InfectNear(int number): m_number(number) {}
+	InfectNear(int number, TCPStream* globalServerStream):
+		m_number(number), m_globalServerStream(globalServerStream) {}
 
 	void* run()
    {
 		//TCPConnector* connector = new TCPConnector;
+		char requestMessage[MESSAGE_LENGTH];
+		char responseMessage[MESSAGE_LENGTH];
+		ssize_t responseMessageLength;
 
-      /*for(int i = 0;; i++)
+      for(int i = 0;; i++)
       {
       	//printf("InfectNear - thread %lu, number %d, loop %d - waiting for item...\n",
          //   (long unsigned)self(),m_number, i);
 			usleep(100000*ExpRandomGenerate());
 			if(hostStatus == infected) {
-				TCPStream* stream = connector->connect("localhost", 2000);
+				//search for a host to connect
+				m_globalServerStream->sendMessage("REQUEST HOST", MESSAGE_LENGTH);
+				cout << "sent - " << requestMessage << endl;
+				responseMessageLength = m_globalServerStream->receiveMessage(responseMessage, MESSAGE_LENGTH);
+				responseMessage[responseMessageLength] = '\0';
+				cout << "received - " << responseMessage << endl;
+
+				//connecting to the founded host
+				//the line below is wrong -- need to use the founded host port in the connector
+				/*TCPStream* stream = connector->connect(GLOBAL_SERVER_IP, GLOBAL_SERVER_PORT);
 				if(stream) {
 					printf("InfectNear - connection established\n");
 				}
@@ -47,10 +62,9 @@ public:
 					printf("InfectNear - error connon eection\n");
 				}
 				delete stream;
+				*/
 			}
-
-      }*/
-
+      }
       return NULL;
    }
 };
@@ -81,26 +95,27 @@ public:
 
 class ExogenousInfect : public Thread
 {
-	int m_number;
 public:
+	int m_number;
 	ExogenousInfect(int number): m_number(number) {}
 
    void* run()
    {
       for(int i = 0;; i++)
       {
-      	//p'rintf("ExogenousInfect - thread %lu, number %d, loop %d - waiting for item...\n",
+      	//printf("ExogenousInfect - thread %lu, number %d, loop %d - waiting for item...\n",
          //   (long unsigned)self(),m_number, i);
-			/*if(hostStatus == susceptible) {
+			if(hostStatus == susceptible) {
 				printf("%ld - exogenous - susceptible\n", time(NULL));
 				hostStatus = infected;
 				printf("%ld - exogenous - infected\n", time(NULL));
 				usleep(1000000*ExpRandomGenerate());
-      	}*/
+      	}
 		}
       return NULL;
    }
 };
+
 
 class EndogenousInfect : public Thread
 {
@@ -119,7 +134,6 @@ public:
       {
       	//printf("EndogenousInfect - thread %lu, number %d, loop %d - waiting for item...\n",
          //   (long unsigned)self(),m_number, i);
-			//usleep(10000000);
 			if(hostStatus == susceptible) {
 				TCPStream* stream = acceptor->accept();
 				if(stream) {
@@ -148,37 +162,8 @@ int main(int argc, char** argv)
 
 	int hostPort = atoi(argv[2]);
 
+	//setting the host default status
 	hostStatus = infected;
-
-   // Create the threads
-	InfectNear* infectNear = new InfectNear(1);
-	if(!infectNear) {
-		printf("Could not create InfectNear");
-		exit(1);
-	}
-	infectNear->start();
-
-	SelfHeal* selfHeal = new SelfHeal(2);
-	if(!selfHeal) {
-		printf("Could not create SelfHeal");
-		exit(1);
-	}
-	selfHeal->start();
-
-	ExogenousInfect* exogenousInfect = new ExogenousInfect(3);
-	if(!exogenousInfect) {
-		printf("Could not create ExogenousInfect");
-		exit(1);
-	}
-	exogenousInfect->start();
-
-	EndogenousInfect* endogenousInfect = new EndogenousInfect(4, hostPort);
-	if(!endogenousInfect) {
-		printf("Could not create EndogenousInfect");
-		exit(1);
-	}
-	endogenousInfect->start();
-
 
 	//Connecting to the Global Server
 	TCPConnector* connector = new TCPConnector;
@@ -187,24 +172,62 @@ int main(int argc, char** argv)
 		cout << "Connected with Global Server\n";
 
 		char requestMessage[MESSAGE_LENGTH];
-		char responseMessage[MESSAGE_LENGTH];
-		ssize_t responseMessageLength;
+		//char responseMessage[MESSAGE_LENGTH];
+		//ssize_t responseMessageLength;
 
 		snprintf(requestMessage,MESSAGE_LENGTH,"%d",hostPort);
 		globalServerStream->sendMessage(requestMessage, MESSAGE_LENGTH);
 
 
-		globalServerStream->sendMessage("REQUEST HOST", MESSAGE_LENGTH);
+		/*globalServerStream->sendMessage("REQUEST HOST", MESSAGE_LENGTH);
 		cout << "sent - " << requestMessage << endl;
 		responseMessageLength = globalServerStream->receiveMessage(responseMessage, MESSAGE_LENGTH);
 		responseMessage[responseMessageLength] = '\0';
 		cout << "received - " << responseMessage << endl;
-
+		*/
 	}
 	else{
 		perror("Error connecting to Global Server");
 	}
 
+
+
+
+   // Create the threads
+	InfectNear* infectNear = new InfectNear(1, globalServerStream);
+	if(!infectNear) {
+		printf("Could not create InfectNear");
+		exit(1);
+	}
+	//infectNear->start();
+
+	SelfHeal* selfHeal = new SelfHeal(2);
+	if(!selfHeal) {
+		printf("Could not create SelfHeal");
+		exit(1);
+	}
+	//selfHeal->start();
+
+	ExogenousInfect* exogenousInfect = new ExogenousInfect(3);
+	if(!exogenousInfect) {
+		printf("Could not create ExogenousInfect");
+		exit(1);
+	}
+	//exogenousInfect->start();
+
+	EndogenousInfect* endogenousInfect = new EndogenousInfect(4, hostPort);
+	if(!endogenousInfect) {
+		printf("Could not create EndogenousInfect");
+		exit(1);
+	}
+	//endogenousInfect->start();
+
+
+	//starting the threads
+	infectNear->start();
+	selfHeal->start();
+	exogenousInfect->start();
+	endogenousInfect->start();
 
 
 	// infinite loop program
