@@ -27,3 +27,12 @@ float UniformRandomGenerate()
 	
 	return variable;
 }
+
+int RandomGenerate(int maxRange) {
+	int variable;
+	
+	srand(time(NULL));
+	variable = (int) (rand()%maxRange+1)/maxRange;
+
+	return variable;
+}

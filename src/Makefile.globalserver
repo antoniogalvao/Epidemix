@@ -1,7 +1,7 @@
 CC = g++
 CFLAGS = -g -c -Wall
 LDFLAGS =
-SOURCES = globalserver.cpp tcpstream.cpp tcpacceptor.cpp thread.cpp
+SOURCES = globalserver.cpp globalfunctions.cpp tcpstream.cpp tcpacceptor.cpp thread.cpp randomvariable.cpp
 INCLUDES = -I. 
 LCRYPTO = -L/usr/lib -lssl -lcrypto
 LPTHREAD = -lpthread
