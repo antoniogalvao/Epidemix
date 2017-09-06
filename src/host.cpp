@@ -13,12 +13,16 @@
 
 #define FAIL -1
 
+#define LAMBDA_COEFICIENT 1
+#define MI_COEFICIENT 1
+#define GAMA_COEFICIENT 1
+
 #define GLOBAL_SERVER_IP "localhost"
 #define GLOBAL_SERVER_PORT 2000
 #define LOCALHOST "localhost"
 
+#define TIME_COEFICIENT 100000
 
-#define TIME_COEFICIENT 2500000
 
 #define MESSAGE_LENGTH 256
 
@@ -105,7 +109,7 @@ public:
    void* run()
    {
       for(;;)
-      {
+      {/*
 			usleep(TIME_COEFICIENT*10*ExpRandomGenerate());
 			if(hostStatus == susceptible) {
 				hostStatus = infected;
@@ -113,6 +117,7 @@ public:
 				m_globalServerStream ->sendMessage("INFECTED", MESSAGE_LENGTH);
 				cout << time(NULL) << " - exogenous - infected" << endl;
       	}
+		*/
 		}
       return NULL;
    }
@@ -140,7 +145,7 @@ public:
 				if(stream) {
 					printf("EndogenousInfect - connection established\n");
 					hostStatus = infected;
-					m_globalServerStream->sendMessage("EXOGENOUS", MESSAGE_LENGTH);
+					m_globalServerStream->sendMessage("ENDOGENOUS", MESSAGE_LENGTH);
 					m_globalServerStream->sendMessage("INFECTED", MESSAGE_LENGTH);
 					cout << time(NULL) <<  " - endogenous - infected" << endl;
 				}
@@ -166,7 +171,7 @@ int main(int argc, char** argv)
 	int hostPort = atoi(argv[2]);
 
 	//setting the host default status
-	hostStatus = susceptible;
+	hostStatus = infected;
 
 	//Connecting to the Global Server
 	TCPConnector* connector = new TCPConnector;

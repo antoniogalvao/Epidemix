@@ -7,6 +7,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include "include/globalfunctions.h"
 #include "include/thread.h"
 #include "include/workqueue.h"
@@ -21,6 +22,9 @@ ofstream hostFile;
 ofstream resultFile;
 int connectionNumber = 0;
 int infectedNodes = 0;
+
+//time variables
+time_t start_time, end_time;
 
 
 class WorkItem
@@ -41,19 +45,19 @@ public:
 
    void* run()
    {
-      for(long unsigned i = 0;; i++)
+		infectedNodes++;
+      for(;;)
       {
 
          ssize_t length;
          char hostRequestMessage[256];
          char serverResponseMessage[256];
-
-         printf("thread %lu, loop %ld - waiting for item...\n",
+			WorkItem* item = m_queue.remove();
+        /* printf("thread %lu, loop %ld - waiting for item...\n",
             (long unsigned)self(), i);
-         WorkItem* item = m_queue.remove();
          printf("thread %lu, loop %ld - got one item\n",
             (long unsigned)self(), i);
-
+			*/
          //establishes connection with a host
          TCPStream* stream = item->getStream();
 			char peerPortString[10];
@@ -102,7 +106,8 @@ public:
                cout << "TOTAL INFECTED - "  << infectedNodes << endl;
                //saving some results
                resultFile.open(RESULT_FILENAME, std::ios_base::app);
-               resultFile << time(NULL) << " " << infectedNodes << "\n";
+               end_time = clock();
+               resultFile << (end_time - start_time) << " " << infectedNodes << "\n";
                resultFile.close();
 
             }
@@ -111,10 +116,11 @@ public:
                infectedNodes--;
                cout << "TOTAL INFECTED - "  << infectedNodes << endl;
                //saving some results
-               resultFile.open(RESULT_FILENAME, std::ios_base::app);
-      			resultFile << time(NULL) << " " << infectedNodes << "\n";
-      			resultFile.close();
 
+               resultFile.open(RESULT_FILENAME, std::ios_base::app);
+               end_time = clock();
+      			resultFile << (end_time - start_time) << " " << infectedNodes << "\n";
+      			resultFile.close();
             }
 
             //strcat(serverResponseMessage, peerPortString);
@@ -133,11 +139,15 @@ public:
 
 int main(int argc, char** argv)
 {
+
    if(argc != 4)
    {
       printf("Usage: %s <ip> <port> <number-workers>\n", argv[0]);
       exit(1);
    }
+
+   //getting the start time
+   start_time = clock();
 
    //create the queue and consumer(worker) threads
    int workers = atoi(argv[3]);

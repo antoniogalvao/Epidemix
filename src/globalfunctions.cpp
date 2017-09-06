@@ -20,7 +20,6 @@ int searchHost(const vector<hostData> & hostVector, char* peerPortString) {
       index = RandomGenerate(hostVector.size());
    }
 
-
    int hostPort = atoi(hostVector[index].hostPortString.c_str());
 
    return hostPort;
