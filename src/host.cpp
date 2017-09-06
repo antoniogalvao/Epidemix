@@ -16,6 +16,8 @@
 #define GLOBAL_SERVER_IP "localhost"
 #define GLOBAL_SERVER_PORT 2000
 
+#define LOCALHOST "localhost"
+
 #define MESSAGE_LENGTH 256
 
 
@@ -34,35 +36,31 @@ public:
 
 	void* run()
    {
-		//TCPConnector* connector = new TCPConnector;
-		char requestMessage[MESSAGE_LENGTH];
+		TCPConnector* connector = new TCPConnector;
 		char responseMessage[MESSAGE_LENGTH];
 		ssize_t responseMessageLength;
 
-      for(int i = 0;; i++)
+      for(;;)
       {
-      	//printf("InfectNear - thread %lu, number %d, loop %d - waiting for item...\n",
-         //   (long unsigned)self(),m_number, i);
 			usleep(100000*ExpRandomGenerate());
 			if(hostStatus == infected) {
 				//search for a host to connect
 				m_globalServerStream->sendMessage("REQUEST HOST", MESSAGE_LENGTH);
-				cout << "sent - " << requestMessage << endl;
 				responseMessageLength = m_globalServerStream->receiveMessage(responseMessage, MESSAGE_LENGTH);
 				responseMessage[responseMessageLength] = '\0';
 				cout << "received - " << responseMessage << endl;
 
+				int foundedHostPort = atoi(responseMessage);
+
 				//connecting to the founded host
-				//the line below is wrong -- need to use the founded host port in the connector
-				/*TCPStream* stream = connector->connect(GLOBAL_SERVER_IP, GLOBAL_SERVER_PORT);
+				TCPStream* stream = connector->connect(LOCALHOST, foundedHostPort);
 				if(stream) {
-					printf("InfectNear - connection established\n");
+					cout << "InfectNear - connection established" << endl;
 				}
 				else{
-					printf("InfectNear - error connon eection\n");
+					cout << "InfectNear - error conection" << endl;
 				}
 				delete stream;
-				*/
 			}
       }
       return NULL;
@@ -78,14 +76,12 @@ public:
 
    void* run()
    {
-      for(int i = 0;; i++)
+      for(;;)
       {
-      	//printf("SelfHeal - thread %lu, number %d, loop %d - waiting for item...\n",
-            //(long unsigned)self(),m_number, i);
+
 			if(hostStatus == infected){
-				printf("%ld - selfheal - infected\n", time(NULL));
 				usleep(1000000*ExpRandomGenerate());
-				printf("%ld - selfheal - susceptible\n", time(NULL));
+				cout << time(NULL) << " - selfheal - susceptible" << endl;
 				hostStatus = susceptible;
 			}
       }
@@ -101,14 +97,11 @@ public:
 
    void* run()
    {
-      for(int i = 0;; i++)
+      for(;;)
       {
-      	//printf("ExogenousInfect - thread %lu, number %d, loop %d - waiting for item...\n",
-         //   (long unsigned)self(),m_number, i);
 			if(hostStatus == susceptible) {
-				printf("%ld - exogenous - susceptible\n", time(NULL));
 				hostStatus = infected;
-				printf("%ld - exogenous - infected\n", time(NULL));
+				cout << time(NULL) << " - exogenous - infected" << endl;
 				usleep(1000000*ExpRandomGenerate());
       	}
 		}
@@ -127,18 +120,16 @@ public:
 
    void* run()
    {
-		TCPAcceptor* acceptor = new TCPAcceptor("localhost", m_hostPort);
+		TCPAcceptor* acceptor = new TCPAcceptor(LOCALHOST, m_hostPort);
 		acceptor->start();
 		cout << "EndogenousInfect - Acceptor created" << endl;
-      for(int i = 0;; i++)
+      for(;;)
       {
-      	//printf("EndogenousInfect - thread %lu, number %d, loop %d - waiting for item...\n",
-         //   (long unsigned)self(),m_number, i);
 			if(hostStatus == susceptible) {
 				TCPStream* stream = acceptor->accept();
 				if(stream) {
 					printf("EndogenousInfect - connection established\n");
-					cout << "EndogenousInfect - infected" << endl;
+					cout << time(NULL) <<  " - endogenous - infected" << endl;
 					hostStatus = infected;
 				}
 				else{
@@ -163,31 +154,22 @@ int main(int argc, char** argv)
 	int hostPort = atoi(argv[2]);
 
 	//setting the host default status
-	hostStatus = infected;
+	hostStatus = susceptible;
 
 	//Connecting to the Global Server
 	TCPConnector* connector = new TCPConnector;
 	TCPStream* globalServerStream = connector->connect(GLOBAL_SERVER_IP, GLOBAL_SERVER_PORT);
 	if(globalServerStream){
 		cout << "Connected with Global Server\n";
-
 		char requestMessage[MESSAGE_LENGTH];
 		//char responseMessage[MESSAGE_LENGTH];
 		//ssize_t responseMessageLength;
-
 		snprintf(requestMessage,MESSAGE_LENGTH,"%d",hostPort);
 		globalServerStream->sendMessage(requestMessage, MESSAGE_LENGTH);
-
-
-		/*globalServerStream->sendMessage("REQUEST HOST", MESSAGE_LENGTH);
-		cout << "sent - " << requestMessage << endl;
-		responseMessageLength = globalServerStream->receiveMessage(responseMessage, MESSAGE_LENGTH);
-		responseMessage[responseMessageLength] = '\0';
-		cout << "received - " << responseMessage << endl;
-		*/
 	}
 	else{
 		perror("Error connecting to Global Server");
+		exit(1);
 	}
 
 
@@ -199,28 +181,27 @@ int main(int argc, char** argv)
 		printf("Could not create InfectNear");
 		exit(1);
 	}
-	//infectNear->start();
+
 
 	SelfHeal* selfHeal = new SelfHeal(2);
 	if(!selfHeal) {
 		printf("Could not create SelfHeal");
 		exit(1);
 	}
-	//selfHeal->start();
+
 
 	ExogenousInfect* exogenousInfect = new ExogenousInfect(3);
 	if(!exogenousInfect) {
 		printf("Could not create ExogenousInfect");
 		exit(1);
 	}
-	//exogenousInfect->start();
+
 
 	EndogenousInfect* endogenousInfect = new EndogenousInfect(4, hostPort);
 	if(!endogenousInfect) {
 		printf("Could not create EndogenousInfect");
 		exit(1);
 	}
-	//endogenousInfect->start();
 
 
 	//starting the threads
@@ -235,30 +216,8 @@ int main(int argc, char** argv)
 
 
 
-	// Create a TCPAcceptor
-
-  /*TCPAcceptor* acceptor = NULL;
-   acceptor = new TCPAcceptor(argv[1], atoi(argv[2]));
-   if(!acceptor || acceptor->start() > 0){
-      printf("Could not create an connection acceptor\n");
-      exit(1);
-   }
-
-
-	while(1)
-   {
-      TCPStream* connection = acceptor->accept();
-      std::cout << "Connection: " << connection->getPeerIP() << ":" << connection->getPeerPort() << std::endl;
-
-      if(!connection){
-         printf("Could not accept a connection\n");
-         continue;
-      }
-   }*/
-
    perror("Could not start the server\n");
 
 	delete globalServerStream;
    exit(-1);
-
 }

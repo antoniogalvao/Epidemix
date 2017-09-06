@@ -74,7 +74,7 @@ public:
 			printf("%d - %s %s\n", connectionNumber, peerPortString, hostPortString);
 
          connectionNumber++;
-
+         //loop waiting for messages from host
          while ((length = stream->receiveMessage(hostRequestMessage, sizeof(hostRequestMessage))) > 0)
          {
             hostRequestMessage[length] = '\0';
@@ -89,19 +89,16 @@ public:
                //search randomic for a host that is not the actual peer
                int peerPort = searchHost(hostVector, peerPortString);
                cout << "PORTA ALEATORIA ENCONTRADA: " << peerPort << endl;
+               memset(serverResponseMessage, 0, sizeof(serverResponseMessage));
                snprintf(serverResponseMessage, length, "%d", peerPort);
+               cout << "TESTE " << serverResponseMessage << endl;
                stream->sendMessage(serverResponseMessage, length);
             }
-            else{
-               printf("faz nada\n");
-            }
 
-
-            strcat(serverResponseMessage, peerPortString);
-            strcat(serverResponseMessage, " - ");
-            strcat(serverResponseMessage, hostRequestMessage);
-
-            stream->sendMessage(serverResponseMessage, length);
+            //strcat(serverResponseMessage, peerPortString);
+            //strcat(serverResponseMessage, " - ");
+            //strcat(serverResponseMessage, hostRequestMessage);
+            //stream->sendMessage(serverResponseMessage, length);
          }
 
          delete stream;
