@@ -4,8 +4,8 @@
 #include <vector>
 #include <string>
 
-#define FILENAME "example.txt"
-
+#define NODES_FILENAME "nodes.txt"
+#define RESULT_FILENAME "result.txt"
 
 typedef struct {
    std::string peerPortString;

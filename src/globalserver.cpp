@@ -17,7 +17,8 @@
 
 
 vector<hostData> hostVector;
-ofstream myfile;
+ofstream hostFile;
+ofstream resultFile;
 int connectionNumber = 0;
 int infectedNodes = 0;
 
@@ -67,9 +68,9 @@ public:
          hostVector[connectionNumber].peerPortString = peerPortString;
          hostVector[connectionNumber].hostPortString = hostPortString;
 
-         myfile.open(FILENAME, std::ios_base::app);
-			myfile << connectionNumber << " " << peerPortString << " " << hostPortString << "\n";
-			myfile.close();
+         hostFile.open(NODES_FILENAME, std::ios_base::app);
+			hostFile << connectionNumber << " " << peerPortString << " " << hostPortString << "\n";
+			hostFile.close();
 
 
 			printf("%d - %s %s\n", connectionNumber, peerPortString, hostPortString);
@@ -99,11 +100,21 @@ public:
             if( (strcmp(hostRequestMessage, "INFECTED"))  == 0 ){
                infectedNodes++;
                cout << "TOTAL INFECTED - "  << infectedNodes << endl;
+               //saving some results
+               resultFile.open(RESULT_FILENAME, std::ios_base::app);
+               resultFile << time(NULL) << " " << infectedNodes << "\n";
+               resultFile.close();
+
             }
 
             if( (strcmp(hostRequestMessage, "SUSCEPTIBLE")) == 0) {
                infectedNodes--;
                cout << "TOTAL INFECTED - "  << infectedNodes << endl;
+               //saving some results
+               resultFile.open(RESULT_FILENAME, std::ios_base::app);
+      			resultFile << time(NULL) << " " << infectedNodes << "\n";
+      			resultFile.close();
+
             }
 
             //strcat(serverResponseMessage, peerPortString);
