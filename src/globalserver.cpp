@@ -19,6 +19,7 @@
 vector<hostData> hostVector;
 ofstream myfile;
 int connectionNumber = 0;
+int infectedNodes = 0;
 
 
 class WorkItem
@@ -39,17 +40,17 @@ public:
 
    void* run()
    {
-      for(int i = 0;; i++)
+      for(long unsigned i = 0;; i++)
       {
 
          ssize_t length;
          char hostRequestMessage[256];
          char serverResponseMessage[256];
 
-         printf("thread %lu, loop %d - waiting for item...\n",
+         printf("thread %lu, loop %ld - waiting for item...\n",
             (long unsigned)self(), i);
          WorkItem* item = m_queue.remove();
-         printf("thread %lu, loop %d - got one item\n",
+         printf("thread %lu, loop %ld - got one item\n",
             (long unsigned)self(), i);
 
          //establishes connection with a host
@@ -80,11 +81,11 @@ public:
             hostRequestMessage[length] = '\0';
         //    char peerPortString[10];
         //    sprintf(peerPortString, "%d",stream->getPeerPort());
-            printf("%s - %s\n", peerPortString, hostRequestMessage);
+            cout <<  "New message : " << peerPortString << " - " << hostRequestMessage << endl;
 
-            printf("%s\n", hostRequestMessage);
+            //printf("%s\n", hostRequestMessage);
 
-            if( (strcmp(hostRequestMessage,"REQUEST HOST")) == 0 ){
+            if( (strcmp(hostRequestMessage, "REQUEST HOST")) == 0 && connectionNumber > 1) {
                printf("procurar host\n");
                //search randomic for a host that is not the actual peer
                int peerPort = searchHost(hostVector, peerPortString);
@@ -93,6 +94,16 @@ public:
                snprintf(serverResponseMessage, length, "%d", peerPort);
                cout << "TESTE " << serverResponseMessage << endl;
                stream->sendMessage(serverResponseMessage, length);
+            }
+
+            if( (strcmp(hostRequestMessage, "INFECTED"))  == 0 ){
+               infectedNodes++;
+               cout << "TOTAL INFECTED - "  << infectedNodes << endl;
+            }
+
+            if( (strcmp(hostRequestMessage, "SUSCEPTIBLE")) == 0) {
+               infectedNodes--;
+               cout << "TOTAL INFECTED - "  << infectedNodes << endl;
             }
 
             //strcat(serverResponseMessage, peerPortString);
@@ -159,7 +170,6 @@ int main(int argc, char** argv)
          continue;
       }
       queue.add(item);
-      //echo server message for all clients
    }
 
    perror("Could not start the server\n");

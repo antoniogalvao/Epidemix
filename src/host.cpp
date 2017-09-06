@@ -15,8 +15,10 @@
 
 #define GLOBAL_SERVER_IP "localhost"
 #define GLOBAL_SERVER_PORT 2000
-
 #define LOCALHOST "localhost"
+
+
+#define TIME_COEFICIENT 2500000
 
 #define MESSAGE_LENGTH 256
 
@@ -42,7 +44,7 @@ public:
 
       for(;;)
       {
-			usleep(100000*ExpRandomGenerate());
+			usleep(TIME_COEFICIENT*ExpRandomGenerate());
 			if(hostStatus == infected) {
 				//search for a host to connect
 				m_globalServerStream->sendMessage("REQUEST HOST", MESSAGE_LENGTH);
@@ -71,18 +73,21 @@ public:
 class SelfHeal : public Thread
 {
 	int m_number;
+	TCPStream* m_globalServerStream;
 public:
-	SelfHeal(int number): m_number(number) {}
+	SelfHeal(int number, TCPStream* globalServerStream):
+		m_number(number), m_globalServerStream(globalServerStream) {}
 
    void* run()
    {
       for(;;)
       {
-
 			if(hostStatus == infected){
-				usleep(1000000*ExpRandomGenerate());
-				cout << time(NULL) << " - selfheal - susceptible" << endl;
+				usleep(TIME_COEFICIENT*ExpRandomGenerate());
 				hostStatus = susceptible;
+				m_globalServerStream->sendMessage("SELF HEAL", MESSAGE_LENGTH);
+				m_globalServerStream->sendMessage("SUSCEPTIBLE", MESSAGE_LENGTH);
+				cout << time(NULL) << " - selfheal - susceptible" << endl;
 			}
       }
       return NULL;
@@ -91,18 +96,22 @@ public:
 
 class ExogenousInfect : public Thread
 {
-public:
 	int m_number;
-	ExogenousInfect(int number): m_number(number) {}
+	TCPStream* m_globalServerStream;
+public:
+	ExogenousInfect (int number, TCPStream* globalServerStream):
+		m_number(number), m_globalServerStream(globalServerStream)  {}
 
    void* run()
    {
       for(;;)
       {
+			usleep(TIME_COEFICIENT*10*ExpRandomGenerate());
 			if(hostStatus == susceptible) {
 				hostStatus = infected;
+				m_globalServerStream->sendMessage("EXOGENOUS", MESSAGE_LENGTH);
+				m_globalServerStream ->sendMessage("INFECTED", MESSAGE_LENGTH);
 				cout << time(NULL) << " - exogenous - infected" << endl;
-				usleep(1000000*ExpRandomGenerate());
       	}
 		}
       return NULL;
@@ -114,9 +123,10 @@ class EndogenousInfect : public Thread
 {
 	int m_number;
 	int m_hostPort;
+	TCPStream* m_globalServerStream;
 public:
-	EndogenousInfect(int number, int hostPort)
-		:m_number(number), m_hostPort(hostPort) {}
+	EndogenousInfect(int number, int hostPort,TCPStream* globalServerStream):
+		m_number(number), m_hostPort(hostPort), m_globalServerStream(globalServerStream) {}
 
    void* run()
    {
@@ -129,8 +139,10 @@ public:
 				TCPStream* stream = acceptor->accept();
 				if(stream) {
 					printf("EndogenousInfect - connection established\n");
-					cout << time(NULL) <<  " - endogenous - infected" << endl;
 					hostStatus = infected;
+					m_globalServerStream->sendMessage("EXOGENOUS", MESSAGE_LENGTH);
+					m_globalServerStream->sendMessage("INFECTED", MESSAGE_LENGTH);
+					cout << time(NULL) <<  " - endogenous - infected" << endl;
 				}
 				else{
 					printf("EndogenousInfect - error connection\n");
@@ -183,21 +195,21 @@ int main(int argc, char** argv)
 	}
 
 
-	SelfHeal* selfHeal = new SelfHeal(2);
+	SelfHeal* selfHeal = new SelfHeal(2, globalServerStream);
 	if(!selfHeal) {
 		printf("Could not create SelfHeal");
 		exit(1);
 	}
 
 
-	ExogenousInfect* exogenousInfect = new ExogenousInfect(3);
+	ExogenousInfect* exogenousInfect = new ExogenousInfect(3, globalServerStream);
 	if(!exogenousInfect) {
 		printf("Could not create ExogenousInfect");
 		exit(1);
 	}
 
 
-	EndogenousInfect* endogenousInfect = new EndogenousInfect(4, hostPort);
+	EndogenousInfect* endogenousInfect = new EndogenousInfect(4, hostPort, globalServerStream);
 	if(!endogenousInfect) {
 		printf("Could not create EndogenousInfect");
 		exit(1);
