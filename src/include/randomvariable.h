@@ -3,7 +3,7 @@
 
 int RandomGenerate(int maxRange);
 
-float ExpRandomGenerate();
+float ExpRandomGenerate(float coeficient);
 
 float UniformRandomGenerate();
 

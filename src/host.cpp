@@ -13,9 +13,10 @@
 
 #define FAIL -1
 
-#define LAMBDA_COEFICIENT 1
 #define MI_COEFICIENT 1
-#define GAMA_COEFICIENT 1
+#define LAMBDA_COEFICIENT 1
+#define GAMA_COEFICIENT 1.1
+#define EXP_COEFICIENT 1.1
 
 #define GLOBAL_SERVER_IP "localhost"
 #define GLOBAL_SERVER_PORT 2000
@@ -48,7 +49,7 @@ public:
 
       for(;;)
       {
-			usleep(TIME_COEFICIENT*ExpRandomGenerate());
+			usleep(TIME_COEFICIENT*ExpRandomGenerate(GAMA_COEFICIENT));
 			if(hostStatus == infected) {
 				//search for a host to connect
 				m_globalServerStream->sendMessage("REQUEST HOST", MESSAGE_LENGTH);
@@ -87,7 +88,7 @@ public:
       for(;;)
       {
 			if(hostStatus == infected){
-				usleep(TIME_COEFICIENT*ExpRandomGenerate());
+				usleep(TIME_COEFICIENT*ExpRandomGenerate(MI_COEFICIENT));
 				hostStatus = susceptible;
 				m_globalServerStream->sendMessage("SELF HEAL", MESSAGE_LENGTH);
 				m_globalServerStream->sendMessage("SUSCEPTIBLE", MESSAGE_LENGTH);
@@ -110,7 +111,7 @@ public:
    {
       for(;;)
       {/*
-			usleep(TIME_COEFICIENT*10*ExpRandomGenerate());
+			usleep(TIME_COEFICIENT*10*ExpRandomGenerate(LAMBDA_COEFICIENT));
 			if(hostStatus == susceptible) {
 				hostStatus = infected;
 				m_globalServerStream->sendMessage("EXOGENOUS", MESSAGE_LENGTH);
@@ -144,7 +145,7 @@ public:
 				TCPStream* stream = acceptor->accept();
 				if(stream) {
 					printf("EndogenousInfect - connection established\n");
-					hostStatus = infected;
+					hostStatus = infected;	
 					m_globalServerStream->sendMessage("ENDOGENOUS", MESSAGE_LENGTH);
 					m_globalServerStream->sendMessage("INFECTED", MESSAGE_LENGTH);
 					cout << time(NULL) <<  " - endogenous - infected" << endl;

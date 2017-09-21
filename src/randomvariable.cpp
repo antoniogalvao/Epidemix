@@ -16,11 +16,10 @@ int RandomGenerate(int maxRange) {
 }
 
 
-float ExpRandomGenerate()
+float ExpRandomGenerate(float coeficient)
 {
 	float variable, exponential;
 	int precision = 1000;
-	float coeficient = 1.1;
 
 	srand(time(NULL));
 	variable = (float) (rand()%precision+1)/precision;
