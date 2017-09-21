@@ -45,7 +45,6 @@ public:
 
    void* run()
    {
-		infectedNodes++;
       for(;;)
       {
 
@@ -184,6 +183,8 @@ int main(int argc, char** argv)
          printf("Could not accept a connection\n");
          continue;
       }
+		
+		infectedNodes++;
       item = new WorkItem(connection);
       if(!item)
       {
