@@ -47,16 +47,12 @@ public:
    {
       for(;;)
       {
-
          ssize_t length;
          char hostRequestMessage[256];
          char serverResponseMessage[256];
+
 			WorkItem* item = m_queue.remove();
-        /* printf("thread %lu, loop %ld - waiting for item...\n",
-            (long unsigned)self(), i);
-         printf("thread %lu, loop %ld - got one item\n",
-            (long unsigned)self(), i);
-			*/
+
          //establishes connection with a host
          TCPStream* stream = item->getStream();
 			char peerPortString[10];
@@ -71,10 +67,10 @@ public:
          hostVector[connectionNumber].peerPortString = peerPortString;
          hostVector[connectionNumber].hostPortString = hostPortString;
 
-         hostFile.open(NODES_FILENAME, std::ios_base::app);
+         /*hostFile.open(NODES_FILENAME, std::ios_base::app);
 			hostFile << connectionNumber << " " << peerPortString << " " << hostPortString << "\n";
 			hostFile.close();
-
+         */
 
 			printf("%d - %s %s\n", connectionNumber, peerPortString, hostPortString);
 
@@ -107,7 +103,6 @@ public:
                resultFile.open(RESULT_FILENAME, std::ios_base::app);
                end_time = clock();
                resultFile << (end_time - start_time) << " " << infectedNodes << "\n";
-               resultFile.close();
 
             }
 
@@ -119,15 +114,8 @@ public:
                resultFile.open(RESULT_FILENAME, std::ios_base::app);
                end_time = clock();
       			resultFile << (end_time - start_time) << " " << infectedNodes << "\n";
-      			resultFile.close();
             }
-
-            //strcat(serverResponseMessage, peerPortString);
-            //strcat(serverResponseMessage, " - ");
-            //strcat(serverResponseMessage, hostRequestMessage);
-            //stream->sendMessage(serverResponseMessage, length);
          }
-
          delete stream;
       }
       return NULL;
@@ -183,7 +171,7 @@ int main(int argc, char** argv)
          printf("Could not accept a connection\n");
          continue;
       }
-		
+
 		infectedNodes++;
       item = new WorkItem(connection);
       if(!item)
