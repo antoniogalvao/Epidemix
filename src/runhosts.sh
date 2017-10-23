@@ -1,10 +1,10 @@
 #!/bin/bash
 
 
-hostport=8100
+hostport=7300
 
 
-for i in {1..50..1}
+for i in {1..100..1}
 do
 	echo $i $hostport
 	./host localhost $hostport &

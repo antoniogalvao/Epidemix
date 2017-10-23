@@ -83,35 +83,34 @@ public:
         //    sprintf(peerPortString, "%d",stream->getPeerPort());
             cout <<  "New message : " << peerPortString << " - " << hostRequestMessage << endl;
 
-            //printf("%s\n", hostRequestMessage);
+            //printf("%s\n", hostRequestMessage)
 
-            if( (strcmp(hostRequestMessage, "REQUEST HOST")) == 0 && connectionNumber > 1) {
+            if( (strcmp(hostRequestMessage, "REQUEST HOST")) == 0 ) {
                printf("procurar host\n");
                //search randomic for a host that is not the actual peer
                int peerPort = searchHost(hostVector, peerPortString);
-               cout << "PORTA ALEATORIA ENCONTRADA: " << peerPort << endl;
+               //cout << "PORTA ALEATORIA ENCONTRADA: " << peerPort << endl;
                memset(serverResponseMessage, 0, sizeof(serverResponseMessage));
                snprintf(serverResponseMessage, length, "%d", peerPort);
-               cout << "TESTE " << serverResponseMessage << endl;
+               //cout << "TESTE " << serverResponseMessage << endl;
                stream->sendMessage(serverResponseMessage, length);
             }
 
-            if( (strcmp(hostRequestMessage, "INFECTED"))  == 0 ){
-               infectedNodes++;
+            if( ((strcmp(hostRequestMessage, "INFECTED"))  == 0)){
+               infectedNodes = infectedNodes + 1;
                cout << "TOTAL INFECTED - "  << infectedNodes << endl;
                //saving some results
-               resultFile.open(RESULT_FILENAME, std::ios_base::app);
+					//resultFile.open(RESULT_FILENAME, std::ios_base::app);
                end_time = clock();
                resultFile << (end_time - start_time) << " " << infectedNodes << "\n";
-
             }
 
             if( (strcmp(hostRequestMessage, "SUSCEPTIBLE")) == 0) {
-               infectedNodes--;
+               infectedNodes = infectedNodes - 1;
                cout << "TOTAL INFECTED - "  << infectedNodes << endl;
                //saving some results
 
-               resultFile.open(RESULT_FILENAME, std::ios_base::app);
+               //resultFile.open(RESULT_FILENAME, std::ios_base::app);
                end_time = clock();
       			resultFile << (end_time - start_time) << " " << infectedNodes << "\n";
             }
@@ -133,13 +132,19 @@ int main(int argc, char** argv)
       exit(1);
    }
 
-   //getting the start time
+	unsigned connectionsCounter = 0;
+
+  	resultFile.open(RESULT_FILENAME, std::ios_base::app);
+
+	//getting the start time
    start_time = clock();
 
+	resultFile << "0 0\n";
+
    //create the queue and consumer(worker) threads
-   int workers = atoi(argv[3]);
+   unsigned workers = atoi(argv[3]);
    WorkQueue<WorkItem*> queue;
-   for (int i = 0; i < workers; i++)
+   for (unsigned i = 0; i < workers; i++)
    {
       ConnectionHandler* handler = new ConnectionHandler(queue);
       if(!handler) {
@@ -162,17 +167,16 @@ int main(int argc, char** argv)
    cout << "Server online" << endl;
 
 
-   while(1)
+   while(connectionsCounter < workers)
    {
       TCPStream* connection = acceptor->accept();
       std::cout << "Connection: " << connection->getPeerIP() << ":" << connection->getPeerPort() << std::endl;
-
       if(!connection){
          printf("Could not accept a connection\n");
          continue;
       }
-
-		infectedNodes++;
+		connectionsCounter++;
+		//infectedNodes++;
       item = new WorkItem(connection);
       if(!item)
       {
@@ -181,7 +185,13 @@ int main(int argc, char** argv)
       }
       queue.add(item);
    }
+		cout <<"p4\n";
 
-   perror("Could not start the server\n");
-   exit(-1);
+	while(clock()/CLOCKS_PER_SEC < 30){
+		//DO NOTHING
+	}
+
+   //perror("Could not start the server\n");
+   resultFile.close();
+	exit(-1);
 }

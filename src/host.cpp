@@ -13,9 +13,10 @@
 
 #define FAIL -1
 
-#define MI_COEFICIENT 1
-#define LAMBDA_COEFICIENT 1
 #define GAMA_COEFICIENT 1.1
+#define MI_COEFICIENT 1
+#define LAMBDA_COEFICIENT 1.0
+
 #define EXP_COEFICIENT 1.1
 
 #define GLOBAL_SERVER_IP "localhost"
@@ -75,24 +76,26 @@ public:
 };
 
 
+
 class SelfHeal : public Thread
 {
 	int m_number;
+	int m_hostPort;
 	TCPStream* m_globalServerStream;
 public:
-	SelfHeal(int number, TCPStream* globalServerStream):
-		m_number(number), m_globalServerStream(globalServerStream) {}
+	SelfHeal(int number, int hostPort, TCPStream* globalServerStream):
+		m_number(number), m_hostPort(hostPort), m_globalServerStream(globalServerStream) {}
 
    void* run()
    {
       for(;;)
       {
+			usleep(TIME_COEFICIENT*ExpRandomGenerate(MI_COEFICIENT));
 			if(hostStatus == infected){
-				usleep(TIME_COEFICIENT*ExpRandomGenerate(MI_COEFICIENT));
 				hostStatus = susceptible;
 				m_globalServerStream->sendMessage("SELF HEAL", MESSAGE_LENGTH);
 				m_globalServerStream->sendMessage("SUSCEPTIBLE", MESSAGE_LENGTH);
-				cout << time(NULL) << " - selfheal - susceptible" << endl;
+				cout << time(NULL) << " - " << m_hostPort << " - selfheal - susceptible" << endl;
 			}
       }
       return NULL;
@@ -102,23 +105,24 @@ public:
 class ExogenousInfect : public Thread
 {
 	int m_number;
+	int m_hostPort;
 	TCPStream* m_globalServerStream;
 public:
-	ExogenousInfect (int number, TCPStream* globalServerStream):
-		m_number(number), m_globalServerStream(globalServerStream)  {}
+	ExogenousInfect (int number, int hostPort, TCPStream* globalServerStream):
+		m_number(number), m_hostPort(hostPort), m_globalServerStream(globalServerStream)  {}
 
    void* run()
    {
+
       for(;;)
-      {/*
-			usleep(TIME_COEFICIENT*10*ExpRandomGenerate(LAMBDA_COEFICIENT));
+      {
+			usleep(TIME_COEFICIENT*ExpRandomGenerate(LAMBDA_COEFICIENT));
 			if(hostStatus == susceptible) {
 				hostStatus = infected;
 				m_globalServerStream->sendMessage("EXOGENOUS", MESSAGE_LENGTH);
-				m_globalServerStream ->sendMessage("INFECTED", MESSAGE_LENGTH);
-				cout << time(NULL) << " - exogenous - infected" << endl;
+				m_globalServerStream->sendMessage("INFECTED", MESSAGE_LENGTH);
+				cout << time(NULL) << " - " << m_hostPort << " - exogenous - infected" << endl;
       	}
-		*/
 		}
       return NULL;
    }
@@ -141,22 +145,23 @@ public:
 		cout << "EndogenousInfect - Acceptor created" << endl;
       for(;;)
       {
-			if(hostStatus == susceptible) {
-				TCPStream* stream = acceptor->accept();
-				if(stream) {
-					printf("EndogenousInfect - connection established\n");
-					hostStatus = infected;	
+			TCPStream* stream = acceptor->accept();
+			if(stream) {
+				printf("EndogenousInfect - connection established\n");
+				if(hostStatus == susceptible) {
+					hostStatus = infected;
 					m_globalServerStream->sendMessage("ENDOGENOUS", MESSAGE_LENGTH);
 					m_globalServerStream->sendMessage("INFECTED", MESSAGE_LENGTH);
-					cout << time(NULL) <<  " - endogenous - infected" << endl;
+					cout << time(NULL) << " - " << m_hostPort <<  " - endogenous - infected" << endl;
 				}
-				else{
-					printf("EndogenousInfect - error connection\n");
-				}
-				delete stream;
 			}
+			else {
+				printf("EndogenousInfect - error connection\n");
+			}
+			delete stream;
 		}
       return NULL;
+
 	}
 };
 
@@ -172,7 +177,7 @@ int main(int argc, char** argv)
 	int hostPort = atoi(argv[2]);
 
 	//setting the host default status
-	hostStatus = infected;
+	hostStatus = susceptible;
 
 	//Connecting to the Global Server
 	TCPConnector* connector = new TCPConnector;
@@ -201,14 +206,14 @@ int main(int argc, char** argv)
 	}
 
 
-	SelfHeal* selfHeal = new SelfHeal(2, globalServerStream);
+	SelfHeal* selfHeal = new SelfHeal(2, hostPort, globalServerStream);
 	if(!selfHeal) {
 		printf("Could not create SelfHeal");
 		exit(1);
 	}
 
 
-	ExogenousInfect* exogenousInfect = new ExogenousInfect(3, globalServerStream);
+	ExogenousInfect* exogenousInfect = new ExogenousInfect(3, hostPort, globalServerStream);
 	if(!exogenousInfect) {
 		printf("Could not create ExogenousInfect");
 		exit(1);

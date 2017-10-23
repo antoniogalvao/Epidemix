@@ -12,9 +12,9 @@ using namespace std;
 
 //the good practice is call this function only with the system have more than 1 host
 int searchHost(const vector<hostData> & hostVector, char* peerPortString) {
-	cout << "PEER PORT STRING " << peerPortString << endl;
+	//cout << "PEER PORT STRING " << peerPortString << endl;
    int index = RandomGenerate(hostVector.size());
-   cout << index << endl;
+   //cout << index << endl;
    //this loop doesnt check if the system have only one node
    //can runs indefinitely
   /* while(strcmp(hostVector[index].peerPortString.c_str(),peerPortString) == 0) {
